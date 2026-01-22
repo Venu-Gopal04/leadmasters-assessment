@@ -42,7 +42,7 @@ function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            const res = await axios.get('http://localhost:5001/api/stats');
+        //    const res = await axios.get('http://localhost:5001/api/stats');
             setStats(res.data);
         } catch (err) {
             console.error("Error connecting to Python Service:", err);
@@ -53,7 +53,7 @@ function Dashboard() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            await axios.post('/api/tasks', 
+            await axios.post('https://leadmasters-assessment.onrender.com/api/tasks', 
                 { title, description, priority, dueDate }, 
                 { headers: { 'auth-token': token } }
             );
