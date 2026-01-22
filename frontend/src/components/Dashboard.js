@@ -11,7 +11,7 @@ function Dashboard() {
     const [priority, setPriority] = useState("Medium");
     const [dueDate, setDueDate] = useState("");
 
-    // Statistics (Static for now)
+    // Statistics
     const [stats, setStats] = useState({ 
         total_tasks: 0, 
         productivity_score: 0, 
@@ -34,10 +34,10 @@ function Dashboard() {
             });
             setTasks(res.data);
             
-            // Simple logic to update stats without Python
+            // Update stats
             setStats({
                 total_tasks: res.data.length,
-                productivity_score: 0,
+                productivity_score: 0, // Static because AI is disabled
                 high_priority_pending: res.data.filter(t => t.priority === "High").length
             });
 
@@ -58,11 +58,24 @@ function Dashboard() {
             setDescription("");
             setPriority("Medium");
             setDueDate("");
-            
-            fetchTasks(token);
-            
+            fetchTasks(token); 
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    // --- NEW: DELETE FUNCTION ---
+    const handleDelete = async (id) => {
+        const token = localStorage.getItem('token');
+        if(window.confirm("Are you sure you want to delete this task?")) {
+            try {
+                await axios.delete(`https://leadmasters-assessment.onrender.com/api/tasks/${id}`, {
+                    headers: { 'auth-token': token }
+                });
+                fetchTasks(token); // Refresh list after delete
+            } catch (err) {
+                console.error("Error deleting task:", err);
+            }
         }
     };
 
@@ -141,6 +154,23 @@ function Dashboard() {
                                 </div>
                                 <p>{task.description}</p>
                                 <small>📅 Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Date'}</small>
+                                
+                                {/* DELETE BUTTON */}
+                                <button 
+                                    onClick={() => handleDelete(task._id)}
+                                    style={{
+                                        marginTop: '10px',
+                                        background: '#ff4757',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '5px 10px',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    🗑 Delete
+                                </button>
                             </div>
                         ))}
                     </div>
