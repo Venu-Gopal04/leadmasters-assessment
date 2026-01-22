@@ -43,7 +43,7 @@ function Dashboard() {
     const fetchStats = async () => {
         try {
         //    const res = await axios.get('http://localhost:5001/api/stats');
-            setStats(res.data);
+        //    setStats(res.data);
         } catch (err) {
             console.error("Error connecting to Python Service:", err);
         }
