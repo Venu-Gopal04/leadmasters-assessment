@@ -40,9 +40,6 @@ function Dashboard() {
         }
     };
 
-    const fetchStats = async () => {
-    console.log("Python service is disabled for now.");
-};
 
     const handleAddTask = async (e) => {
         e.preventDefault();
@@ -57,8 +54,7 @@ function Dashboard() {
             setPriority("Medium");
             setDueDate("");
             
-            fetchTasks(token);
-            setTimeout(fetchStats, 500); 
+            fetchTasks(token); 
         } catch (err) {
             console.error(err);
         }
