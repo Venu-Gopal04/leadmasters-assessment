@@ -31,7 +31,7 @@ function Dashboard() {
 
     const fetchTasks = async (token) => {
         try {
-            const res = await axios.get('http://localhost:5000/api/tasks', {
+            const res = await axios.get('https://leadmasters-assessment.onrender.com/api/tasks', {
                 headers: { 'auth-token': token }
             });
             setTasks(res.data);
@@ -53,7 +53,7 @@ function Dashboard() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://localhost:5000/api/tasks', 
+            await axios.post('/api/tasks', 
                 { title, description, priority, dueDate }, 
                 { headers: { 'auth-token': token } }
             );
@@ -74,7 +74,7 @@ function Dashboard() {
         const token = localStorage.getItem('token');
         try {
             // Update status to "Completed"
-            await axios.put(`http://localhost:5000/api/tasks/${id}`, 
+            await axios.put(`/api/tasks/${id}`, 
                 { status: "Completed" },
                 { headers: { 'auth-token': token } }
             );
@@ -88,7 +88,7 @@ function Dashboard() {
     const handleDelete = async (id) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.delete(`http://localhost:5000/api/tasks/${id}`, {
+            await axios.delete(`/api/tasks/${id}`, {
                 headers: { 'auth-token': token }
             });
             fetchTasks(token);
