@@ -24,7 +24,7 @@ function Dashboard() {
             navigate('/');
         } else {
             fetchTasks(token);
-            fetchAIStats(); // <--- NEW: Fetch from Python
+            fetchAIStats(); 
         }
     }, [navigate]);
 
@@ -39,7 +39,7 @@ function Dashboard() {
             setStats(prev => ({
                 ...prev,
                 total_tasks: res.data.length,
-                high_priority_pending: res.data.filter(t => t.priority === "High").length
+                high_priority_pending: res.data.filter(t => t.priority === "High" && t.status !== "Completed").length
             }));
 
         } catch (err) {
@@ -47,10 +47,10 @@ function Dashboard() {
         }
     };
 
-    // --- NEW: CONNECT TO PYTHON BRAIN ---
+    // --- CONNECT TO PYTHON BRAIN ---
     const fetchAIStats = async () => {
         try {
-            // This URL calls your new Python Service
+            // This URL calls your Python Service
             const res = await axios.get('https://leadmasters-assessment-1.onrender.com/api/stats');
             
             // Update the productivity score with the real number
@@ -60,7 +60,6 @@ function Dashboard() {
             }));
         } catch (err) {
             console.error("AI Service Error:", err);
-            // If Python sleeps, keep it at 0 without crashing
         }
     };
 
@@ -69,7 +68,7 @@ function Dashboard() {
         const token = localStorage.getItem('token');
         try {
             await axios.post('https://leadmasters-assessment.onrender.com/api/tasks', 
-                { title, description, priority, dueDate },
+                { title, description, priority, dueDate, status: "Pending" },
                 { headers: { 'auth-token': token } }
             );
             setTitle("");
@@ -77,10 +76,26 @@ function Dashboard() {
             setPriority("Medium");
             setDueDate("");
             fetchTasks(token); 
-            // Re-fetch AI stats to update score immediately
             setTimeout(fetchAIStats, 1000); 
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    // --- NEW: MARK COMPLETE FUNCTION ---
+    const handleComplete = async (id) => {
+        const token = localStorage.getItem('token');
+        try {
+            // Update the task status to "Completed"
+            await axios.put(`https://leadmasters-assessment.onrender.com/api/tasks/${id}`, 
+                { status: "Completed" },
+                { headers: { 'auth-token': token } }
+            );
+            fetchTasks(token); 
+            // Re-fetch AI stats to see the score jump!
+            setTimeout(fetchAIStats, 1000); 
+        } catch (err) {
+            console.error("Error updating task:", err);
         }
     };
 
@@ -92,7 +107,7 @@ function Dashboard() {
                     headers: { 'auth-token': token }
                 });
                 fetchTasks(token); 
-                setTimeout(fetchAIStats, 1000); // Update score after delete
+                setTimeout(fetchAIStats, 1000); 
             } catch (err) {
                 console.error("Error deleting task:", err);
             }
@@ -168,29 +183,49 @@ function Dashboard() {
                     <h3>📌 Active Tasks</h3>
                     <div className="tasks-grid">
                         {tasks.map(task => (
-                            <div key={task._id} className={`task-card ${task.priority.toLowerCase()}`}>
+                            <div key={task._id} className={`task-card ${task.priority.toLowerCase()} ${task.status === 'Completed' ? 'completed-task' : ''}`}>
                                 <div className="task-header">
                                     <h4>{task.title}</h4>
                                     <span className={`badge ${task.priority}`}>{task.priority}</span>
                                 </div>
                                 <p>{task.description}</p>
                                 <small>📅 Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Date'}</small>
-                                <button 
-                                    onClick={() => handleDelete(task._id)}
-                                    className="delete-btn"
-                                    style={{
-                                        marginTop: '10px',
-                                        background: '#ff4757',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '5px 10px',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    🗑 Delete
-                                </button>
+                                
+                                <div className="card-actions" style={{marginTop: '15px', display: 'flex', gap: '10px'}}>
+                                    {/* NEW: COMPLETE BUTTON */}
+                                    {task.status !== 'Completed' && (
+                                        <button 
+                                            onClick={() => handleComplete(task._id)}
+                                            style={{
+                                                background: '#2ecc71',
+                                                color: 'white',
+                                                border: 'none',
+                                                padding: '8px 12px',
+                                                borderRadius: '5px',
+                                                cursor: 'pointer',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            ✅ Done
+                                        </button>
+                                    )}
+
+                                    {/* DELETE BUTTON */}
+                                    <button 
+                                        onClick={() => handleDelete(task._id)}
+                                        style={{
+                                            background: '#ff4757',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '8px 12px',
+                                            borderRadius: '5px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        🗑 Delete
+                                    </button>
+                                </div>
+                                {task.status === 'Completed' && <div style={{marginTop: '10px', color: '#27ae60', fontWeight: 'bold'}}>✨ Completed!</div>}
                             </div>
                         ))}
                     </div>
