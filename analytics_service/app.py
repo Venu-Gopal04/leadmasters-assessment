@@ -1,8 +1,9 @@
+import os
 from flask import Flask, jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv  
 
 load_dotenv()
 
@@ -40,4 +41,6 @@ def get_stats():
     })
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host='0.0.0.0', port=port)
